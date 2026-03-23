@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从平遥到远方：我们的第一年</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;700&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           第一部分：全局魔法变量与梦幻背景重塑
+           ========================================================================== */
+        :root {
+            /* 提取自梦幻图片的配色卡 */
+            --color-primary: #ffd700; /* 梦幻金 */
+            --color-secondary: #ffb7b2; /* 柔和粉 */
+            --color-accent: #a2d2ff; /* 晶莹蓝 */
+            --color-text-light: #fff5f5;
+            --color-text-dim: #e2e8f0;
+            --font-art-title: 'Zhi Mang Xing', cursive;
+            --font-art-sub: 'Ma Shan Zheng', cursive;
+            --font-body: 'Noto Serif SC', serif;
+            --font-eng: 'Cinzel', serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+       body {
+            background: radial-gradient(circle at center, #1b163a 0%, #0a0816 100%);
+            color: #fff; height: 100vh; overflow: hidden; /* 防止主页出现滚动条 */
+            font-family: var(--font-body);
+            height: 100vh; overflow: hidden;
+            position: relative;
+        }
+
+        /* 动态落花/星光粒子画布 (JS控制) */
+        #magic-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        
+        /* 增加一层柔光叠加，让画面有 "发光" 的感觉 */
+        .glow-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(255,215,0,0.05) 0%, transparent 70%);
+            z-index: 2; pointer-events: none;
+        }
+
+        /* 视图切换核心 */
+        .view { display: none; width: 100%; height: 100vh; position: absolute; top: 0; left: 0; overflow-y: auto; overflow-x: hidden; z-index: 10; animation: gentleFade 1.2s ease-in-out; }
+        .view.active { display: block; }
+        @keyframes gentleFade { 0% { opacity: 0; filter: blur(10px); transform: scale(1.02); } 100% { opacity: 1; filter: blur(0); transform: scale(1); } }
+
+        /* ==========================================================================
+           第二部分：浪漫信封登录页
+           ========================================================================== */
+        #login-view { z-index: 50; }
+        #login-view.active { display: flex; justify-content: center; align-items: center; }
+        
+        .envelope-box {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 15px; padding: 50px 40px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255,215,0,0.1);
+            width: 90%; max-width: 450px; position: relative; overflow: hidden;
+        }
+        /* 信封封蜡装饰 */
+        .wax-seal {
+            width: 60px; height: 60px; background: radial-gradient(circle, #ff6b6b, #c0392b); border-radius: 50%;
+            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center;
+            font-family: var(--font-art-title); font-size: 24px; color: #ffd700; border: 2px solid #8e1000;
+        }
+        
+        .envelope-box h2 { font-family: var(--font-art-sub); font-size: 2.5em; margin-top: 20px; margin-bottom: 10px; color: var(--color-primary); letter-spacing: 3px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .envelope-box p { font-size: 1.1em; color: var(--color-text-dim); margin-bottom: 30px; line-height: 1.6; }
+        
+        .input-group { margin-bottom: 25px; text-align: left; }
+        .input-group label { display: block; font-size: 0.9em; color: var(--color-secondary); margin-bottom: 8px; font-weight: bold; }
+        .input-group input {
+            width: 100%; padding: 15px; border-radius: 8px; border: 1px solid rgba(255,183,178,0.4);
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 1.1em; outline: none; transition: 0.3s;
+            text-align: center; font-family: var(--font-eng); letter-spacing: 2px;
+        }
+        .input-group input:focus { border-color: var(--color-primary); box-shadow: 0 0 15px rgba(255,215,0,0.4); background: rgba(255,255,255,0.1); }
+        
+        .login-btn {
+            width: 100%; padding: 15px; margin-top: 10px; border: none; border-radius: 8px;
+            background: linear-gradient(135deg, #ffd700, #ffb7b2); color: #4a154b; font-weight: bold;
+            font-size: 1.2em; font-family: var(--font-body); cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+        }
+        .login-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255,215,0,0.6); }
+        #login-error { color: #ff9999; font-size: 0.9em; margin-top: 15px; min-height: 20px; transition: 0.3s; }
+
+    /* ==========================================================================
+          /* ==========================================================================
+           第三部分：梦幻交互枢纽 (完美回归深蓝发光水晶版)
+           ========================================================================== */
+        .cover-container { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        
+        .title-top { position: absolute; top: 8%; font-family: var(--font-eng); font-size: 2.2em; letter-spacing: 6px; color: var(--color-text-light); text-shadow: 0 0 20px rgba(255,255,255,0.8); z-index: 20; text-align: center; width: 100%; }
+        .title-bottom { position: absolute; bottom: 8%; font-family: var(--font-art-title); font-size: 3em; letter-spacing: 4px; color: #ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.6); z-index: 20; text-align: center; width: 100%; }
+        
+        /* 中央发光数字 1 与水晶台 */
+        .center-crystal { position: relative; z-index: 15; display: flex; flex-direction: column; align-items: center; margin-top: -8vh; }
+        .giant-one {
+            font-size: 280px; font-weight: 700; line-height: 1; font-family: var(--font-eng);
+            background: linear-gradient(180deg, #ffffff 0%, #a2d2ff 50%, #ffc8dd 100%);
+            -webkit-background-clip: text; color: transparent;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.5));
+        }
+        .crystal-text { font-size: 1.4em; letter-spacing: 4px; text-transform: uppercase; color: #fff; text-shadow: 0 0 10px #fff; margin-top: -30px; font-family: var(--font-eng); z-index: 16; }
+
+        .platform {
+            width: 350px; height: 90px; margin-top: -20px; border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.3) 0%, rgba(162,210,255,0.1) 60%, transparent 100%);
+            box-shadow: 0 0 40px rgba(255,255,255,0.2) inset, 0 20px 50px rgba(162,210,255,0.3);
+            display: flex; justify-content: center; align-items: flex-end; position: relative;
+        }
+        .silhouette { width: 70px; height: 90px; margin-bottom: 25px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.6)); }
+
+        /* 发光路径 (背景层 SVG) */
+        .glowing-paths { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+        .path-line { fill: none; stroke: rgba(255, 215, 0, 0.3); stroke-width: 2; filter: drop-shadow(0 0 5px rgba(255,215,0,0.8)); stroke-dasharray: 10 10; animation: flow 20s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -1000; } }
+
+        /* 浮空泡泡 (半透明玻璃态) */
+        .bubbles-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
+        .bubble {
+            position: absolute; pointer-events: auto; cursor: pointer;
+            width: 110px; height: 110px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 0 20px rgba(255,255,255,0.2) inset, 0 0 15px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: floatBubble 6s ease-in-out infinite alternate;
+            text-decoration: none; color: #fff;
+        }
+        .bubble:hover { transform: scale(1.15); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px rgba(255,215,0,0.6) inset, 0 0 25px rgba(255,215,0,0.4); border-color: #ffd700; z-index: 30;}
+        .bubble i { font-size: 1.8em; margin-bottom: 5px; font-style: normal; }
+        .bubble span { font-size: 0.9em; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        
+        /* 泡泡位置分布 (6个) */
+        .b1 { top: 15%; left: 15%; animation-delay: 0s; }
+        .b2 { top: 45%; left: 8%; animation-delay: 1.2s; }
+        .b3 { top: 72%; left: 20%; animation-delay: 2.5s; }
+        .b4 { top: 20%; right: 15%; animation-delay: 0.8s; }
+        .b5 { top: 48%; right: 8%; animation-delay: 1.8s; }
+        .b6 { top: 72%; right: 20%; animation-delay: 3s; border-color: #ffd700; }
+        
+        /* 未来场景微型占位 */
+        .future-node { position: absolute; font-size: 0.8em; color: rgba(255,255,255,0.6); display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 5;}
+        .future-node i { font-size: 2em; margin-bottom: 5px; opacity: 0.7;}
+        .fn1 { bottom: 25%; right: 25%; } /* 望远镜星空 */
+        .fn2 { bottom: 15%; right: 10%; } /* 未来家园 */
+        
+        @keyframes floatBubble { 0% { transform: translateY(0px); } 100% { transform: translateY(-20px); } }
+
+        /* ==========================================================================
+           第四部分：各大展馆内部排版与特效
+           ========================================================================== */
+        .hall-view { padding: 40px 20px; max-width: 1000px; margin: 0 auto; padding-bottom: 120px; }
+        
+        .hall-header {
+            text-align: center; font-family: var(--font-art-title); font-size: 3.5em; margin-bottom: 40px;
+            color: var(--color-primary); text-shadow: 0 4px 15px rgba(0,0,0,0.6); position: relative;
+        }
+        .hall-header::after { content: ''; display: block; width: 100px; height: 3px; background: linear-gradient(90deg, transparent, var(--color-primary), transparent); margin: 15px auto 0; }
+        
+        /* 幻灯片容器 */
+        .slide { display: none; animation: slideInFade 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; opacity: 0; }
+        .slide.active { display: block; }
+        @keyframes slideInFade { from { opacity: 0; transform: translateX(50px) scale(0.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
+
+        /* 浪漫卡片容器 */
+        .story-card {
+            background: rgba(20, 10, 30, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px; border: 1px solid rgba(255,183,178,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden;
+        }
+        /* 卡片内发光角落 */
+        .story-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: var(--color-primary); filter: blur(60px); opacity: 0.3; }
+
+        .story-text { margin-bottom: 30px; text-align: center; }
+        .story-text h4 { font-family: var(--font-art-sub); font-size: 2.2em; color: var(--color-secondary); margin-bottom: 20px; letter-spacing: 2px; }
+        .story-text p { font-size: 1.15em; line-height: 2; color: var(--color-text-dim); text-align: left; text-indent: 2em; margin-bottom: 15px; }
+
+        /* --- 相册排版 A：拍立得风格 (适用于大部分页面) --- */
+        .polaroid-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 20px; }
+        .polaroid {
+            background: #fff; padding: 15px 15px 40px 15px; border-radius: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            transition: 0.4s; position: relative; width: calc(50% - 30px); min-width: 250px; max-width: 350px;
+        }
+        .polaroid img { width: 100%; height: 250px; object-fit: cover; border: 1px solid #eee; }
+        .polaroid-caption {
+            position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center;
+            color: #333; font-family: var(--font-art-sub); font-size: 1.2em; letter-spacing: 1px;
+        }
+        /* 给拍立得加点随机倾斜感 */
+        .polaroid:nth-child(even) { transform: rotate(2deg); }
+        .polaroid:nth-child(odd) { transform: rotate(-2deg); }
+        .polaroid:hover { transform: scale(1.05) rotate(0deg); z-index: 5; box-shadow: 0 15px 30px rgba(255,215,0,0.3); }
+
+        /* --- 相册排版 B：手机屏幕风格 (专为云端相拥设计) --- */
+        .phone-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin-top: 20px; }
+        .phone-frame {
+            width: 220px; height: 460px; border-radius: 35px; border: 12px solid #2c3e50;
+            background: #000; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.2);
+            position: relative; overflow: hidden; transition: 0.4s;
+        }
+        /* 刘海屏设计 */
+        .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 20px; background: #2c3e50; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; z-index: 2; }
+        .phone-frame img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: 0.3s; }
+        .phone-frame:hover { transform: translateY(-10px); box-shadow: 0 25px 45px rgba(255,183,178,0.4); }
+        .phone-frame:hover img { opacity: 1; }
+
+        /* ==========================================================================
+           第五部分：悬浮导航与交互控件
+           ========================================================================== */
+        .control-bar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(20, 10, 30, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            padding: 15px 40px; border-radius: 40px; border: 1px solid rgba(255,215,0,0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.1); z-index: 100;
+        }
+        .ctrl-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.4); color: #fff;
+            padding: 10px 25px; border-radius: 25px; cursor: pointer; transition: 0.3s;
+            font-family: var(--font-body); font-size: 1.1em; letter-spacing: 1px;
+        }
+        .ctrl-btn:hover { background: rgba(255,215,0,0.2); border-color: var(--color-primary); color: var(--color-primary); }
+        .ctrl-btn.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+        
+        .page-indicator { color: var(--color-primary); font-family: var(--font-eng); font-size: 1.2em; font-weight: bold; width: 70px; text-align: center; }
+        
+        .home-btn { background: rgba(255, 107, 107, 0.2); border-color: #ff6b6b; color: #ffb7b2; }
+        .home-btn:hover { background: rgba(255, 107, 107, 0.5); color: #fff; }
+
+        /* 足迹勋章特殊样式 */
+        .badge-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .badge {
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,183,178,0.15));
+            border: 1px solid rgba(255,215,0,0.4); border-radius: 30px; padding: 12px 25px;
+            font-size: 1.2em; font-family: var(--font-body); display: flex; align-items: center; gap: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .badge:hover { background: rgba(255,215,0,0.3); border-color: #fff; transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 25px rgba(255,215,0,0.3); }
+
+    </style>
+</head>
+<body>
+    <audio id="bgm" loop>
+       <source src="https://image2url.com/r2/default/audio/1774232558189-08b7e2a4-2832-491f-ab55-425c136b973d.mp3" type="audio/mpeg">
+    </audio>
+    <canvas id="magic-canvas"></canvas>
+    <div class="glow-overlay"></div>
+    <div id="login-view" class="view active">
+        <div class="envelope-box">
+            <div class="wax-seal">爱</div>
+            <h2>专属记忆胶囊</h2>
+            <p>扫描访客身份，提取属于我们的第一年时光存档。</p>
+            
+            <div class="input-group">
+                <label>专属账号 (你的名字全拼)</label>
+                <input type="text" id="username" placeholder="cuiqiaoqiao">
+            </div>
+            <div class="input-group">
+                <label>解锁密码 (我们在一起的那天)</label>
+                <input type="password" id="password" placeholder="格式：20260101">
+            </div>
+            
+            <button class="login-btn" onclick="checkLogin()">开启时光机</button>
+            <div id="login-error"></div>
+        </div>
+    </div>
+
+  <div id="cover-view" class="view">
+        <div class="cover-container">
+            <div class="title-top">Past Moments, Future Dreams</div>
+            <div class="title-bottom">第一年，只是序章</div>
+
+            <svg class="glowing-paths">
+                <path class="path-line" d="M 50% 70% Q 20% 80% 10% 90%" />
+                <path class="path-line" d="M 50% 70% Q 80% 80% 90% 90%" style="animation-delay: -5s;"/>
+                <path class="path-line" d="M 50% 70% Q 70% 60% 85% 75%" style="stroke-dasharray: 20 20; stroke-width: 1;"/>
+            </svg>
+
+            <div class="center-crystal">
+                <div class="giant-one">1</div>
+                <div class="crystal-text">Happy Anniversary To Us</div>
+            </div>
+
+            <div class="platform">
+                <svg class="silhouette" viewBox="0 0 100 100" fill="#2c3e50">
+                    <circle cx="35" cy="20" r="8"/><path d="M25,35 Q35,30 40,35 L40,65 L30,95 L25,95 L30,65 L20,95 L15,95 L25,65 Z"/>
+                    <circle cx="65" cy="25" r="7"/><path d="M75,40 Q65,35 60,40 L55,70 L70,95 L75,95 L65,70 L80,95 L85,95 L75,70 Z"/>
+                    <path d="M40,45 Q50,55 60,45" stroke="#2c3e50" stroke-width="4" fill="none"/>
+                </svg>
+            </div>
+
+            <div class="bubbles-container">
+                <a class="bubble b1" onclick="openHall('hall-1')"><i>💌</i><span>心动刻度</span></a>
+                <a class="bubble b2" onclick="openHall('hall-2')"><i>🚂</i><span>山川湖海</span></a>
+                <a class="bubble b3" onclick="openHall('hall-3')"><i>🍲</i><span>三餐四季</span></a>
+                <a class="bubble b4" onclick="openHall('hall-4')"><i>🎠</i><span>闪光碎片</span></a>
+                <a class="bubble b5" onclick="openHall('hall-5')"><i>📷</i><span>云端相拥</span></a>
+                <a class="bubble b6" onclick="openHall('hall-6')"><i>✨</i><span>点亮足迹</span></a>
+            </div>
+
+            <div class="future-node fn1">
+                <i>🔭</i><span>一起看星空</span>
+            </div>
+            <div class="future-node fn2">
+                <i>🏡</i><span>未来的家</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="hall-1" class="view hall-view">
+        <h2 class="hall-header">心动刻度</h2>
+        
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.3.23 · 故事的开始</h4>
+                    <p>太原的空气里还有些微凉，但我们在KTV里确认了彼此的心意，那一刻世界都亮了。这是我送给你的第一束花，希望你喜欢。</p>
+                    <p>后来我们一起去了密室逃脱考验默契，在电玩城像个孩子一样大笑，最后在迎泽公园漫步。一切都发生得刚刚好。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/tC69jdMh/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21h_Niph_VDd_Kb_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">第一束花</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/9X6rZf3J/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_UW1na3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">KTV告白</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/YCfk4rkD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_Zk_VJa0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">密室逃脱</div></div>
+ 
+                    <div class="polaroid"><img src="https://i.postimg.cc/rmzLY54J/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_V3cwa2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">电玩城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/W1n3B6dK/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_ZWd_Gb_EN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">迎泽公园</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/fLr1qv63/58775da8d45c9fa0f94c37c12a40224a.jpg"><div class="polaroid-caption">迎泽公园</div></div>
+                
+               </div>
+            </div>
+        </div>
+      
+      <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.4.19 · DIY银戒</h4>
+                    <p>我们在一起后的第二次见面，一起相约DIY银戒，从那时起，从不戴饰品我整整戴了一年，戴上亲手打磨的银戒，仿佛套住了我们的小小世界。</p>
+                    <p>我们还一起下五子棋，一直记得那天你说我让你的时候很帅。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/RCyvypXZ/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3Bh_Niph_VWxwa2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DIY戒指</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/FzMmS17S/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xx_Niph_VDZzb_Hl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DIY戒指</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/xqVDC74g/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29LNiph_Zi5ia_Xl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DIY戒指</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/T39wzqyx/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_WUtmb0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DTY戒指</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/m27hwGBD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_U1FPal_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DTY戒指</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/CMXwXrmd/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3BLNiph_Uk_VXb_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">DTY戒指</div></div>
+                    
+                    <div class="polaroid"><img src="https://i.postimg.cc/L8M26YdH/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21LNiph_WEJEb_Hl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">下五子棋</div></div>
+                
+               </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.6.16 · 你的毕业与生日</h4>
+                    <p>这一天太特殊了，双份的快乐。我先去了榆次，骄傲地看着你参加本科毕业典礼，见证了你人生重要的里程碑。</p>
+                    <p>之后我们匆匆赶回太原，虽然只在宾馆一个小小的房间里为你过生日，但只要你在身边，哪里都是最温馨的派对现场。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/tCF75Hpg/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_Zj_NOZ2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/vHnGs7Nv/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21h_Niph_Vkx3Z1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/gkL20bnT/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2tx_Niph_U3FTZ3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/hvzchVPD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2x_LNiph_ZXFFZnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/G3VbVgq2/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3BLNiph_U2c3Znl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/x8zV9YtX/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29h_Niph_Zkp_La_EN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">毕业快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/zD6q620L/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3BLNiph_Um_Ez_Zl_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">生日快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/XY8JRcZb/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_WUcq_Znl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">生日快乐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/3w8hmsJc/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_V1Zx_Z1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">生日快乐</div></div>
+                    
+                </div>
+            </div>
+        </div>
+      
+      <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.7.1 · 在一起一百天</h4>
+                    <p>不知不觉我们已经相爱一百天啦。送上为你精心挑选的鲜花，一百天只是个浪漫的开始，未来还有无数个一百天在等我们。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/Z5h4K9G2/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21LNiph_V1lq_Zml3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">一百天纪念日</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/3rV3VfnB/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21h_Niph_Uj_I2ZXl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">一百天纪念日</div></div>
+                   
+                </div>
+            </div>
+         </div>
+      
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.10.3 · 国庆节与我的生日</h4>
+                    <p>国庆假期，我去接你下班，我们一起给我过生日。其实哪怕什么都不做，只要看到你奔向我的那一刻，就是最好的生日礼物。</p>
+                    <p>满心欢喜地去找你，却意外生病了。原本计划好的约会变成了在医院和诊所间的奔波，是你一直陪在我身边，温柔又耐心地照顾我。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/rs3y9QYd/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2s2Niph_YWl_IYk_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">接你下班</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/D0Jnm1y3/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2x_LNiph_ZVkw_Wml3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">我的生日</div></div>
+                   <div class="polaroid"><img src="https://i.postimg.cc/DZz2kt9Z/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xh_Niph_VWlv_YUN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">我的生日</div></div>
+                   
+                </div>
+            </div>
+         </div>
+      
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>2025.12.31 · 一起跨年</h4>
+                    <p>再见2025！跨年夜我们在酒店里自己动手煮了热气腾腾的火锅，一起认真地做了年终总结。旧的一年很棒，但新的一年因为有你，一定会更棒。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/yYRRpYwt/b4cdd5e4c0968c87ebee215233c4e800.jpg"><div class="polaroid-caption">跨年夜</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/nLFQLKCs/2353280bd9b64bce100cda730dea9c1d.jpg"><div class="polaroid-caption">跨年夜</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">时间在走，爱意在长</h4><p>点击下方进入下一篇章</p></div></div>
+    </div>
+
+    <div id="hall-2" class="view hall-view">
+        <h2 class="hall-header">山川与湖海</h2>
+
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>5.4 · 平遥古城的雨</h4>
+                    <p>在我们的家乡平遥，一起逛古城，发现了好多姓氏挂件，白和崔都挨在一起。</p>
+                    <p>天公不作美下起了雨，但我们却觉得很浪漫。披着雨衣在雨中打卡拍照，这段淋雨的回忆反而成了最清晰的画面。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/nL3Jk3Xf/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_ZTh5Y2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">逛古城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/XJX0D95P/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_WG1GY2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">逛古城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/SKghrgnW/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25LNiph_WWNJYnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">逛古城</div></div>
+           
+                    <div class="polaroid"><img src="https://i.postimg.cc/BZkJk7Mv/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3Bh_Niph_Zkpwa_VN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">雨中漫步</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>5.29 - 6.1 · 北京初夏漫游</h4>
+                    <p>你来北京找我啦！我们去动物园看小动物，在天安门和北海公园留下合影。哪怕6月1日下着雨，也要拉着你去国贸大裤衩拍照打卡。有你在的城市，连雨天都很可爱。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/Qx7j3gzh/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21LNiph_UU90a_Gl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天安门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/nhYZsFZD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_Wk5Oa_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天安门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/QCHx5RSL/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2s2Niph_Ui5SZ3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">人民英雄纪念碑</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/BZrXHv9s/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_WXgza_Hl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">人民大会堂</div></div>
+                   
+                    <div class="polaroid"><img src="https://i.postimg.cc/wMCHN374/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xx_Niph_WERla_Hl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">北海公园</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/50txdZhj/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xh_Niph_VUdma_Hl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">北海公园</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/tT7HmF6z/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_UURpak_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">动物园</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/bwQYQ00G/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2w2Niph_UUEza_Gl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">央视大裤衩</div></div>
+                    
+                    <div class="polaroid"><img src="https://i.postimg.cc/fWpMpqBw/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3Bh_Niph_Vi5y_Z2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">国贸CBD</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/HxLpDfqP/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2x_LNiph_VDhta_UN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">国贸CBD</div></div>
+               
+              </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>7.26 · 天津的盛夏微风</h4>
+                    <p>天津之旅真的去了好多地方！海河的风吹拂过脸庞，我们在教堂和瓷房子前惊叹，站在人挤人的桥上与天津之眼合影。</p>
+                    <p>漫步在意大利风情街、五大道和古文化街，还一起坐在茶馆里听了地道的相声，吃了天津菜。行程满满，快乐也满满。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/t7GQTfMB/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29LNiph_ZTJBZUN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天津之旅</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/XY3q1DYz/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_ZEFt_ZHl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天津之旅</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/2Sw6sFqf/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_WDBHZUN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">海河边</div></div>
+                  
+                    <div class="polaroid"><img src="https://i.postimg.cc/2y9xdzXh/721601255a5377f753fd060f1ef6a230.jpg"><div class="polaroid-caption">天津之眼</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/xdV33ptq/bbf9b78b9436453bb36d2dd24b9a8374.jpg"><div class="polaroid-caption">教堂</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/5tgxrxR1/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xh_Niph_US5CZnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天津钟楼</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/ydr7VLB1/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2x_LNiph_Y1VPZ1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">瓷房子</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/Hk4HJYH9/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_Y29o_ZXl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">听相声</div></div>
+                  
+                    <div class="polaroid"><img src="https://i.postimg.cc/hPGyXY30/3ab9045922d48c800fb14ff27f2ab404.jpg"><div class="polaroid-caption">听相声</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/hvkgmhfH/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xx_Niph_Ymh_JZk_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">五大道</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>8.23 · 洛阳大唐幻夜</h4>
+                    <p>梦回大唐的一次旅行！我们在洛邑古城租了古装，化作古风眷侣。晚上我们冒着雨去应天门拍照打卡，那种穿越时空的感觉太奇妙了。</p>
+                    <p>第二天逛完洛阳博物馆后，我们一起坐火车回家，在火车上吃的那顿泡面，大概是全世界最好吃的泡面吧。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/HxgHHmzS/9a4023c38e41bf5e631380e517969471.jpg"><div class="polaroid-caption">洛邑古城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/1trS3dY4/50fbb48e1c6ff5e043952a965c655eef.jpg"><div class="polaroid-caption">洛邑古城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/3J6sY7J0/148451ccf1a2e0b308a1c817d4568005.jpg"><div class="polaroid-caption">洛邑古城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/VNP20RtM/5ec629516c5dfc9024add2dec5761b43.jpg"><div class="polaroid-caption">洛邑古城</div></div>
+                  
+                    <div class="polaroid"><img src="https://i.postimg.cc/bvmhTmZD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25LNiph_WGhv_Yl_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">应天门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/rpVTxBwp/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_ZExj_Yl_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">应天门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/268cnXS5/c9585d321e7452e46d5dfdc411861fc2.jpg"><div class="polaroid-caption">丽景门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/Y0vdsGgS/f35c261cd21b62e3252f526886850389.jpg"><div class="polaroid-caption">丽景门</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/yYBPRbQG/4abe259ee7b8e9b8b6859901dd41cf4b.jpg"><div class="polaroid-caption">大唐盛宴</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/gjpvvxDQ/9b59ac14c0ca1678eb37e38ad0c5c756.jpg"><div class="polaroid-caption">大唐盛宴</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/SQBJCKFk/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_Y3Vz_Yml3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">硬火车上的泡面</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/MpJ81q26/b855fdd32908ca0895e5908792ae1bb3.jpg"><div class="polaroid-caption">硬卧回家</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>12.6 环球影城</h4>
+                    <p>“霍格沃茨的魔法，不如你的笑容有魔力。我们在北京环球影城疯玩了一整天，刷了好多项目，像是进入了另一个童话世界。”</p>
+                    <p>拍照时把你惹生气啦，哭着拽着我的袖子擦鼻涕</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/zfzNKsX6/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_WEM3WWl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">环球影城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/zfzNKsGX/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_YUp_RV3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">环球影城</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/15D4HZs3/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_Yzl_TWFN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">旋转木马</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/59YXXCr6/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29x_Niph_WFhy_WUN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">霍格沃兹</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/ZYMqZ5K5/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2th_Niph_WWVRWWl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">功夫熊猫</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/9MSj3ztV/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29h_Niph_Ukkz_V3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">小黄人</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/0jTxSrbt/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xx_Niph_VW9z_Wk_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">圣诞树</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/DZDKVmdV/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_Yn_FPYl_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">功夫熊猫</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/W1jzYf19/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_YTJ2V0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">威震天合影</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">世界很大，只想和你一起看</h4></div></div>
+    </div>
+
+    <div id="hall-3" class="view hall-view">
+        <h2 class="hall-header">三餐四季</h2>
+
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>无火锅不欢</h4>
+                    <p>如果你问我这一年我们吃得最多的是什么，那一定是火锅！</p>
+                    <p>5月5日在老家平遥吃的晋何鲜货，12月7日在北京寒风中吃的火锅，1月3日在太原吃的运城铜火锅，还有跨年和1月底我们在酒店里自己动手煮的DIY火锅。热气腾腾的雾气里，全是你笑意盈盈的脸。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/FKHRNdcF/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_Yz_M4al_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">晋何鲜货</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/c1gvvnzF/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29x_Niph_YWY3a_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">前门涮肉</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/wTRjBY7R/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2t_LNiph_Vzc0V0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">运城铜火锅</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/fTSRbQJ9/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2t_LNiph_WWNx_Y2l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">重庆火锅</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/WpBhg4RB/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_Wndw_V1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">锅圈火锅</div></div>
+              
+              </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>那些特别的味道</h4>
+                    <p>除了火锅，我们也打卡了各地的特色美食。5月底在北京吃了正宗的烤鸭，还勇敢尝试了豆汁冰激凌（笑）。</p>
+                    <p>7月在天津吃了卷圈和刨冰；8月在洛阳品尝了宫廷宴席“大唐盛宴”；11月在太原一起吃了浪漫的西餐和心心念念的大虾。</p>
+                    <p>每一次吃“漂亮饭”，都是属于我们日常生活中的小确幸。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/DwdFWvFW/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_V3JNa1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">北京烤鸭</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/05F9FXcM/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM3BLNiph_VEJa_Z3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">豆汁冰激凌</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/cLZCk5L2/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_YVh_TZml3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">东北菜</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/fRjZ3zZm/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_Y0x1VXl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">西餐</div></div>
+                     <div class="polaroid"><img src="https://i.postimg.cc/pLxrc1L7/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM242Niph_ZEFPWnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">西餐</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/7PdqdtmK/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21h_Niph_U1JDZ3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">绿茶餐厅</div></div>
+                     <div class="polaroid"><img src="https://i.postimg.cc/FzMmS17Y/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xx_Niph_UWJl_ZWl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天津菜</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/QtMXGR2Q/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xh_Niph_Yj_ZMZVN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">天津菜</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/Sstmyg4r/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2x_LNiph_Vnlh_ZVN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">刨冰</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/W1MpMmm7/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2w2Niph_WGJVWk_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">大虾</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/7ZywYGv6/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21LNiph_WUl2a0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">炒菜</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/g0zp8C2c/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25h_Niph_YUpja_Xl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">干杯</div></div>
+                    
+              </div>
+            </div>
+        </div>
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">把你喂胖，是我的终极目标</h4></div></div>
+    </div>
+
+    <div id="hall-4" class="view hall-view">
+        <h2 class="hall-header">闪光碎片</h2>
+
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>未泯的童心</h4>
+                    <p>这是只属于我们的奇奇怪怪和可可爱爱。</p>
+                    <p>和你在一起，我不用做情绪稳定的大人，永远可以当一个快乐的小孩。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/Qx7j3gym/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21h_Niph_WDhy_Y3l3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">摇摇车小队</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/LX7Mdhk0/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_Yksz_Wnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">摇摇车小队</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/YC395fvZ/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_V0FNYk_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">摇摇车小队</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/PxqtsBg4/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2xh_Niph_Yllr_ZFN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">摇摇车小队</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/Xqp7FTx4/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2s2Niph_UTdy_ZGl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">跷跷板</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/j2LdNGvD/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2s2Niph_Y2d_Cb_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">唱歌</div></div>
+                  <div class="polaroid"><img src="https://i.postimg.cc/hhRWjw5H/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29x_Niph_V0pz_Wnl3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">摇摇车</div></div>
+                
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>相约影城</h4>
+                    <p>窝在电影院里的快乐时光。不想走出电影里的世界，只想待在有你的小世界里。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/Gm0h8gDh/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2tx_Niph_ZGEx_Y0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">有病才会喜欢你</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/VsrJJChZ/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM202Niph_Ukh_TVVN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">疯狂动物城2</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/YSdH3dvh/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25LNiph_WDZEY0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">浪浪山小妖怪</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>青春倒带：回到故事开始的地方</h4>
+                    <p>8月3日，我们和发小一起自驾去山上烧烤野营，吹着山风聊着天。</p>
+                    <p>2月20日寒假，我们手牵手一起回到了高中的母校溜达。看着熟悉的操场和教学楼，在校门口吃着披萨。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/50GMcj5D/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_Yk_Fxa_FN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">山上野营</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/KY8zxkLb/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_YVBQZVN3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">山上野营</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/DZCwS2rx/平中.jpg"><div class="polaroid-caption">重回母校</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/63Hp89rH/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM0p_LNiph_Wl_Zs_OHl_VIQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">重回母校</div></div>
+                </div>
+            </div>
+        </div>
+      
+        <div class="slide">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>点滴瞬间</h4>
+                    <p>我们的心动，藏在点滴的小瞬间。</p>
+                </div>
+                <div class="polaroid-grid">
+                    <div class="polaroid"><img src="https://i.postimg.cc/YCfk4rk0/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21LNiph_ZWwu_Vl_N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">喂你吃饭</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/Bncs8SsP/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM21x_Niph_VCp0V1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">给你做饭</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/V65cHXtM/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25x_Niph_Ujd_CZ0N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">一起拍照</div></div>
+                    <div class="polaroid"><img src="https://i.postimg.cc/ht949884/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2w2Niph_U2Vwa1N3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">一起坐火车</div></div>
+   
+                  <div class="polaroid"><img src="https://i.postimg.cc/9fLhpLD0/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM25LNiph_VU9Faml3IQUAc_XVu_Z3o.jpg"><div class="polaroid-caption">亲亲</div></div>
+                </div>
+            </div>
+         </div>
+      
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">每一件平凡的小事，都闪闪发光</h4></div></div>
+    </div>
+
+    <div id="hall-5" class="view hall-view">
+        <h2 class="hall-header">云端相拥 · 屏幕里的温柔</h2>
+
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text">
+                    <h4>跨越时空的凝望</h4>
+                    <p>太原到北京的距离，被一个个夜晚的视频通话填满。那些屏幕里的鬼脸、刚睡醒的头发、还有隔着屏幕的晚安，都是异地恋里最珍贵的坚持。</p>
+                    <p>虽然不能立刻拥抱你，但在屏幕里看到你笑的那一刻，我的世界就晴朗了。</p>
+                </div>
+                <div class="phone-grid">
+                    
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/bJMjXdHh/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29h_Niph_U1hu_ZWl3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                    <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/5t20bYvt/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM282Niph_ZGMw_WVN3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/brtfq83b/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29LNiph_UXVma_VN3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/ryPpcwF2/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2th_Niph_Vnd_VWk_N3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                  <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/Y0WBtkbN/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM29LNiph_VGZHZWl3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/bvpyLGLW/NR8AVj_Vi_Q2d_Be_E1EVTVOREkz_TURRM2w2Niph_YUJr_Wl_N3IQUAc_XVu_Z3o.jpg" alt="可爱的截图">
+                    </div>
+                  <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/wjCq0Ztw/95e17d628e489a5fd30b1e8df431f56d.jpg" alt="认真工作">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/VvkmJcTc/261eda106a7fc76d3310ccbdbbcb2421.jpg" alt="认真工作">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/LsG1kxSc/a8595fe4e7c3acd4c7401cea5144dd7e.jpg" alt="亲亲来袭">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/FshJxdt7/ecb04bd6d3a5dafa15aeef50b44021cf.jpg" alt="亲亲来袭">
+                    </div>
+                   <div class="phone-frame">
+                        <div class="phone-notch"></div>
+                        <img src="https://i.postimg.cc/VN0SNXMQ/7da5e6a08d40ec35093d5ab2e91f087f.jpg" alt="亲亲来袭">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">熬过异地，就是一生</h4></div></div>
+    </div>
+
+    <div id="hall-6" class="view hall-view">
+        <h2 class="hall-header">点亮足迹</h2>
+
+        <div class="slide active">
+            <div class="story-card">
+                <div class="story-text" style="text-align: center;">
+                    <p>这不仅是地图上的坐标，更是我们爱过的证明。未来，我们还要点亮更多的勋章。</p>
+                </div>
+                
+                <h4 style="font-family: var(--font-art-sub); color: #fff; margin: 30px 0 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:10px;">📍 城市地图</h4>
+                <div class="badge-container">
+                    <div class="badge">🏠 平遥 (家乡)</div>
+                    <div class="badge">🏙️ 太原 (学校)</div>
+                    <div class="badge">🎓 榆次 (学校)</div>
+                    <div class="badge">⛩️ 北京 (学校)</div>
+                    <div class="badge">🎡 天津 (旅游)</div>
+                    <div class="badge">🏮 洛阳 (旅游)</div>
+                </div>
+
+                <h4 style="font-family: var(--font-art-sub); color: #fff; margin: 40px 0 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:10px;">🎢 奇迹地标</h4>
+                <div class="badge-container">
+                    <div class="badge">🪄 环球影城</div>
+                    <div class="badge">🎡 天津之眼</div>
+                    <div class="badge">🏛️ 洛邑古城</div>
+                    <div class="badge">🏯 天安门</div>
+                    <div class="badge">🏕️ 迎泽公园</div>
+                    <div class="badge">🏰 北海公园</div>
+                </div>
+                
+                <h4 style="font-family: var(--font-art-sub); color: #fff; margin: 40px 0 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:10px;">🎬 酒店打卡</h4>
+                <div class="badge-container">
+                    <div class="badge">🏨 呈运 </div>
+                    <div class="badge">🎤 红苹果</div>
+                    <div class="badge">👘 铭阳</div>
+                    <div class="badge">🏕️ 鸿福</div>
+                    <div class="badge">🚂 君怡</div>
+                    <div class="badge">🌧️ 拾光艺术</div>
+                    <div class="badge">🏨 知晋 </div>
+                    <div class="badge">🎤 星涯</div>
+                    <div class="badge">👘 南苑e家</div>
+                    <div class="badge">🏕️ 锦驿</div>
+                    <div class="badge">🚂 星海</div>
+                    <div class="badge">🌧️ 造梦空间</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide"><div class="story-card" style="text-align:center; padding: 80px 20px;"><h4 style="font-size:2.5em; color:var(--color-primary);">第一年达成！成就系统持续更新中...</h4></div></div>
+    </div>
+
+    <div id="pagination-controls" class="control-bar" style="display: none;">
+        <button class="ctrl-btn" id="prev-btn" onclick="navSlide(-1)">上一页</button>
+        <div class="page-indicator"><span id="current-page">1</span>/<span id="total-pages">3</span></div>
+        <button class="ctrl-btn" id="next-btn" onclick="navSlide(1)">下一页</button>
+        <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.3); margin: 0 5px;"></div>
+        <button class="ctrl-btn home-btn" onclick="backToCover()">返回枢纽</button>
+    </div>
+
+    <script>
+        // --- 1. 梦幻樱花/星光粒子特效引擎 ---
+        const canvas = document.getElementById('magic-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let particles = [];
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height - height;
+                this.size = Math.random() * 3 + 1; // 较小的粒子像星光/花瓣碎屑
+                this.speedY = Math.random() * 1 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.color = Math.random() > 0.5 ? '#ffd700' : '#ffb7b2'; // 金色或粉色
+                this.angle = Math.random() * 360;
+                this.spin = Math.random() * 0.1 - 0.05;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.angle += this.spin;
+                // 增加一点风的摆动
+                this.x += Math.sin(this.angle) * 0.5;
+                
+                if (this.y > height) {
+                    this.y = -10;
+                    this.x = Math.random() * width;
+                }
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillStyle = this.color;
+                // 绘制类似小花瓣或星光的形状
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // --- 2. 登录验证系统 ---
+       // --- 2. 登录验证系统 ---
+        function checkLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('login-error');
+            
+            // 账号：cuiqiaoqiao，密码：20250323
+            if (user === 'cuiqiaoqiao' && pass === '20250323') {
+                document.getElementById('login-view').classList.remove('active');
+
+                // ====== 新增：密码正确时播放音乐 ======
+                const bgm = document.getElementById('bgm');
+                bgm.volume = 0.6; // 设置音量大小 (0.0 到 1.0之间，0.6比较柔和不刺耳)
+                bgm.play().catch(e => console.log("等待用户交互后播放"));
+                // ======================================
+
+                setTimeout(() => {
+                    document.getElementById('cover-view').classList.add('active');
+                }, 300); // 加上小延迟让过渡更丝滑 [cite: 244, 245]
+                errorDiv.innerText = '';
+            } else {
+                errorDiv.innerText = '口令有误哦，请再仔细回忆一下我们故事开始的那一天。';
+                // 登录框轻微震动反馈
+                const box = document.querySelector('.envelope-box');
+                box.style.transform = 'translateX(-10px)';
+                setTimeout(() => box.style.transform = 'translateX(10px)', 100);
+                setTimeout(() => box.style.transform = 'translateX(0)', 200);
+            }
+        }
+
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+
+        // --- 3. 展馆导航与幻灯片翻页逻辑 ---
+        let currentHallId = null;
+        let currentSlideIndex = 0;
+        let totalSlides = 0;
+
+        function openHall(hallId) {
+            document.getElementById('cover-view').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById(hallId).classList.add('active');
+                document.getElementById('pagination-controls').style.display = 'flex';
+                currentHallId = hallId;
+                currentSlideIndex = 0;
+                updateSlides();
+                document.getElementById(hallId).scrollTo(0,0);
+            }, 300);
+        }
+
+        function backToCover() {
+            if(currentHallId) document.getElementById(currentHallId).classList.remove('active');
+            document.getElementById('pagination-controls').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('cover-view').classList.add('active');
+                currentHallId = null;
+            }, 300);
+        }
+
+        function navSlide(direction) {
+            currentSlideIndex += direction;
+            updateSlides();
+            document.getElementById(currentHallId).scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateSlides() {
+            if (!currentHallId) return;
+            const hall = document.getElementById(currentHallId);
+            const slides = hall.querySelectorAll('.slide');
+            totalSlides = slides.length;
+
+            if (currentSlideIndex < 0) currentSlideIndex = 0;
+            if (currentSlideIndex >= totalSlides) currentSlideIndex = totalSlides - 1;
+
+            slides.forEach((slide, index) => {
+                if (index === currentSlideIndex) {
+                    slide.classList.add('active');
+                    // 重置动画
+                    slide.style.animation = 'none';
+                    slide.offsetHeight; /* trigger reflow */
+                    slide.style.animation = null; 
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            document.getElementById('current-page').innerText = currentSlideIndex + 1;
+            document.getElementById('total-pages').innerText = totalSlides;
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            if (currentSlideIndex === 0) prevBtn.classList.add('disabled');
+            else prevBtn.classList.remove('disabled');
+
+            if (currentSlideIndex === totalSlides - 1) nextBtn.classList.add('disabled');
+            else nextBtn.classList.remove('disabled');
+        }
+    </script>
+</body>
+</html>
